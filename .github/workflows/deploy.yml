@@ -1,0 +1,28 @@
+name: Build and Test Container
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-flask-app:${{ github.sha }} .
+
+      - name: Verify container execution (Smoke Test)
+        run: |
+          docker run -d -p 5000:5000 --name test-app my-flask-app:${{ github.sha }}
+          sleep 3
+          curl http://localhost:5000
